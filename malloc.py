@@ -9,10 +9,12 @@ from typing import TypeVar
 T: ctypes._SimpleCData = TypeVar("T")
 PADDING: int = 8
 
+
 class State(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
     FREED = auto()
+
 
 @dataclass
 class Memory(AbstractContextManager):
@@ -26,7 +28,7 @@ class Memory(AbstractContextManager):
 
     def cast(self, typ: T) -> T:
         return ctypes.cast(self.addr, typ)
-    
+
     def as_buffer(self) -> int:
         buf = self.cast(ctypes.c_char_p)
         obj = ctypes.pythonapi.PyBytes_FromString(buf)
@@ -47,11 +49,11 @@ class Memory(AbstractContextManager):
         size = size or other.size
         addr = ctypes.pythonapi.PyMem_Realloc(other.addr, size)
         return Memory(size, addr)
-    
+
     def free(self) -> None:
         self.state = State.FREED
         ctypes.pythonapi.PyMem_Free(self.addr)
-    
+
     def __exit__(self, *exc_info):
         self.free()
 
